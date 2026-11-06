@@ -68,6 +68,8 @@
     <button class="link" onclick="cambiarUsuario()">No soy yo / cambiar usuario</button>
   </div>
 
+  <div class="msg warn" id="avisoGuardar">Este navegador no permite guardar datos (¿navegación privada?). Abrí la página en una pestaña normal o desde el ícono de la pantalla de inicio.</div>
+
   <p class="nota">Se usará la ubicación de tu celular solo para verificar que estás en la oficina.</p>
 </div>
 
@@ -79,11 +81,18 @@
   function leer(k) { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } }
   function borrar(k) { try { localStorage.removeItem(k); } catch (e) {} }
 
-  // La dirección de Apps Script llega dentro del QR (?api=...). Se recuerda para las próximas veces.
+  // Dirección de Apps Script (implementación activa). El QR puede traer otra en ?api=...
+  var API_DEFECTO = 'https://script.google.com/macros/s/AKfycbw_tsy5qsq17V3FO6wbfp5BmtMppJCLWlL8aQ8wfIyAZFKTD-YO0GdjxP1v2d5bd52GKQ/exec';
   var API = (function () {
     var p = new URLSearchParams(location.search).get('api');
     if (p && /^https:\/\/script\.google\.com\//.test(p)) { guardar('asistencia_api', p); return p; }
-    return leer('asistencia_api');
+    return leer('asistencia_api') || API_DEFECTO;
+  })();
+
+  // ¿Este navegador puede guardar datos? Si no, el celular no queda vinculado.
+  var PUEDE_GUARDAR = (function () {
+    try { localStorage.setItem('asistencia_prueba', '1'); localStorage.removeItem('asistencia_prueba'); return true; }
+    catch (e) { return false; }
   })();
 
   function dispositivo() {
@@ -183,6 +192,8 @@
       mostrar(msg, 'err', t);
     }, { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 });
   }
+
+  if (!PUEDE_GUARDAR) document.getElementById('avisoGuardar').style.display = 'block';
 
   if (!API) {
     pantalla('sinqr');
