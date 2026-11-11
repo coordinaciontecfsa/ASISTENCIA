@@ -81,13 +81,10 @@
   function leer(k) { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } }
   function borrar(k) { try { localStorage.removeItem(k); } catch (e) {} }
 
-  // Dirección de Apps Script (implementación activa). El QR puede traer otra en ?api=...
-  var API_DEFECTO = 'https://script.google.com/macros/s/AKfycbw_tsy5qsq17V3FO6wbfp5BmtMppJCLWlL8aQ8wfIyAZFKTD-YO0GdjxP1v2d5bd52GKQ/exec';
-  var API = (function () {
-    var p = new URLSearchParams(location.search).get('api');
-    if (p && /^https:\/\/script\.google\.com\//.test(p)) { guardar('asistencia_api', p); return p; }
-    return leer('asistencia_api') || API_DEFECTO;
-  })();
+  // Dirección de Apps Script (implementación activa). Es fija: se ignora cualquier dirección
+  // que venga en el QR (?api=...) para evitar que un QR viejo deje el celular apuntando mal.
+  var API = 'https://script.google.com/macros/s/AKfycbw_tsy5qsq17V3FO6wbfp5BmtMppJCLWlL8aQ8wfIyAZFKTD-YO0GdjxP1v2d5bd52GKQ/exec';
+  borrar('asistencia_api'); // limpia direcciones viejas guardadas por QR anteriores
 
   // ¿Este navegador puede guardar datos? Si no, el celular no queda vinculado.
   var PUEDE_GUARDAR = (function () {
